@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yota Dev | System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=VT323&family=Nunito:wght@400;700;900&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --black:#050308;
+  --deep:#0a0510;
+  --corrupt:#1a0020;
+  --red:#cc0022;
+  --red2:#ff1133;
+  --purple:#6600aa;
+  --purple2:#9933ff;
+  --glitch1:#ff0044;
+  --glitch2:#00ffee;
+  --glitch3:#ffee00;
+  --text:#f0e6ff;
+  --muted:#9977bb;
+  --surface:rgba(10,5,20,0.88);
+  --border:rgba(150,50,255,0.25);
+}
+
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--black);
+  color:var(--text);
+  overflow:hidden;
+  height:100vh;
+  cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='4' fill='%23cc0022'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23ff1133'/%3E%3C/svg%3E") 10 10, crosshair;
+  position:relative;
+}
+
+/* ── PIBBY BG IMAGE/GIF ── */
+/* 👇 TROQUE "sua-animacao.gif" pelo nome do seu arquivo (coloque na mesma pasta do HTML) */
+#pibby-bg{
+  position:fixed;inset:0;z-index:0;
+  background-image: url('sua-animacao.gif'); /* ← TROQUE AQUI */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.18; /* 0.0 = invisível  |  1.0 = totalmente visível — ajuste ao gosto */
+  pointer-events:none;
+}
+
+/* ── CORRUPTION BG (gradiente sobreposto ao gif) ── */
+#bg{
+  position:fixed;inset:0;z-index:1;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(100,0,30,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(80,0,120,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 80% at 50% 50%, rgba(5,2,10,0.75) 0%, transparent 100%);
+}
+
+/* pixel noise overlay */
+#noise{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  opacity:0.4;
+  mix-blend-mode:overlay;
+}
+
+/* scanlines */
+#scan{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.12) 3px,rgba(0,0,0,0.12) 4px);
+}
+
+/* ── CORRUPTION BLOBS ── */
+.blob{
+  position:fixed;
+  background:var(--black);
+  border:3px solid var(--red);
+  border-radius:2px;
+  z-index:3;
+  pointer-events:none;
+  animation:blob-shift 6s ease-in-out infinite;
+  box-shadow:0 0 15px rgba(200,0,30,0.4),inset 0 0 20px rgba(0,0,0,0.8);
+}
+@keyframes blob-shift{
+  0%,100%{transform:translate(0,0) skewX(0deg);}
+  25%{transform:translate(-3px,2px) skewX(-1deg);}
+  50%{transform:translate(2px,-2px) skewX(1.5deg);}
+  75%{transform:translate(-1px,3px) skewX(-0.5deg);}
+}
+
+/* ── GLITCH LINES ── */
+.g-line{
+  position:fixed;height:2px;
+  background:var(--red2);
+  pointer-events:none;z-index:4;
+  opacity:1;
+  animation:gline var(--dur,3s) ease-in-out infinite var(--delay,0s);
+  box-shadow:0 0 6px var(--red2);
+}
+@keyframes gline{
+  0%,85%,100%{opacity:0;transform:scaleX(0);}
+  86%{opacity:0.9;transform:scaleX(1);}
+  90%{opacity:0.6;}
+  91%{opacity:0.9;}
+  95%{opacity:0;transform:scaleX(0.3);}
+}
+
+/* ── SCREENS ── */
+.screen{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.4s ease,transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  transform:translateX(40px);
+  padding:0 16px 16px;
+  overflow-y:auto;overflow-x:hidden;
+}
+.screen.active{opacity:1;pointer-events:auto;transform:translateX(0);}
+.screen.exit{opacity:0;transform:translateX(-40px);pointer-events:none;}
+
+/* ── TOP BAR ── */
+#topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0 10px;
+  background:linear-gradient(180deg,rgba(5,3,8,0.97) 70%,transparent);
+  flex-shrink:0;
+}
+
+/* logo defined below with glitch */
+/* logo span color */
+@keyframes logo-glitch{
+  0%,92%,100%{text-shadow:2px 2px 0 var(--red),4px 4px 0 rgba(100,0,150,0.5);}
+  93%{text-shadow:-3px 0 var(--glitch2),3px 0 var(--red),2px 2px 0 var(--red);}
+  94%{text-shadow:3px 0 var(--glitch3),-3px 0 var(--glitch1),2px 2px 0 var(--red);}
+  95%{text-shadow:2px 2px 0 var(--red),4px 4px 0 rgba(100,0,150,0.5);}
+}
+
+.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.hp-row{display:flex;align-items:center;gap:7px;}
+.hp-label{font-family:'VT323',monospace;font-size:13px;color:var(--muted);letter-spacing:0.1em;}
+.hp-track{width:80px;height:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(200,0,50,0.3);border-radius:2px;overflow:hidden;}
+.hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red2));width:100%;border-radius:2px;transition:width 0.6s ease;box-shadow:0 0 8px rgba(255,0,40,0.5);}
+.status-txt{font-family:'VT323',monospace;font-size:11px;color:var(--red2);letter-spacing:0.15em;opacity:0.8;}
+
+/* ── SECTION TITLE ── */
+.section-head{padding:8px 0 14px;flex-shrink:0;}
+/* section-title defined below with glitch */
+.section-title::before{
+  content:'';display:inline-block;
+  width:18px;height:18px;
+  background:var(--red);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  animation:diamond-pulse 2s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes diamond-pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.15);}
+}
+.section-sub{
+  font-family:'VT323',monospace;font-size:12px;color:var(--muted);
+  letter-spacing:0.2em;margin-top:3px;padding-left:28px;
+}
+
+/* ── CARDS ── */
+.cards-list{display:flex;flex-direction:column;gap:9px;flex:1;}
+
+.card{
+  background:rgba(8,4,16,0.9);
+  border:1px solid rgba(150,20,50,0.35);
+  border-radius:0;
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+  transition:border-color 0.25s,box-shadow 0.25s;
+  backdrop-filter:blur(6px);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+.card::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(-45deg,transparent,transparent 8px,rgba(180,0,40,0.03) 8px,rgba(180,0,40,0.03) 9px);
+  pointer-events:none;
+}
+.card:hover{border-color:rgba(200,0,50,0.7);box-shadow:0 0 18px rgba(200,0,40,0.2),inset 0 0 25px rgba(100,0,20,0.08);}
+.card.active{border-color:rgba(220,0,60,0.8);box-shadow:0 0 25px rgba(200,0,40,0.3),inset 0 0 30px rgba(80,0,20,0.1);}
+.card.active::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red),var(--purple2),var(--red),transparent);
+  background-size:400% 100%;
+  animation:bar-scroll 2s linear infinite;
+  z-index:5;
+}
+@keyframes bar-scroll{0%{background-position:0% 0;}100%{background-position:400% 0;}}
+
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;user-select:none;
+}
+.card-head-left{display:flex;align-items:center;gap:10px;}
+.card-num{font-family:'VT323',monospace;font-size:16px;color:rgba(150,0,50,0.6);min-width:20px;}
+.card-icon-wrap{
+  width:30px;height:30px;
+  border:1px solid rgba(150,20,50,0.4);
+  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(80,0,20,0.2);flex-shrink:0;
+}
+.card-icon-wrap svg{width:14px;height:14px;stroke:var(--red2);fill:none;stroke-width:1.5;}
+/* card-name defined below with glitch */
+.card-badge{
+  font-family:'VT323',monospace;font-size:11px;color:var(--red2);
+  background:rgba(180,0,30,0.15);border:1px solid rgba(200,0,40,0.3);
+  padding:2px 8px;
+  clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,4px 100%,0 calc(100% - 4px));
+  letter-spacing:0.12em;
+}
+.card-arrow{
+  font-family:'VT323',monospace;font-size:14px;color:var(--red2);opacity:0.5;
+  transition:transform 0.35s ease,opacity 0.25s;
+}
+.card.active .card-arrow{transform:rotate(180deg);opacity:1;}
+
+.card-body{max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.23,1,0.32,1);}
+.card.active .card-body{max-height:350px;}
+.card-body-inner{padding:0 16px 16px;}
+
+.vid-wrap{
+  position:relative;
+  border:1px solid rgba(180,0,40,0.3);
+  background:#000;overflow:hidden;
+  height:180px;
+  display:flex;align-items:center;justify-content:center;
+}
+.vid-wrap::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,0.07) 4px,rgba(0,0,0,0.07) 5px);
+}
+video{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  object-fit:contain;
+  object-position:center;
+  display:block;opacity:0;transition:opacity 0.5s ease 0.15s;
+}
+.card.active video{opacity:1;}
+
+.vid-placeholder{
+  height:130px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:6px;
+  color:var(--muted);font-family:'VT323',monospace;font-size:12px;letter-spacing:0.15em;
+}
+.vid-placeholder svg{width:30px;height:30px;stroke:rgba(200,0,40,0.4);fill:none;stroke-width:1;}
+
+.card-desc{
+  font-family:'VT323',monospace;font-size:14px;color:rgba(180,150,200,0.65);
+  margin-top:9px;letter-spacing:0.06em;line-height:1.5;
+  border-left:2px solid rgba(180,0,40,0.35);padding-left:10px;
+}
+
+/* ── FREEPLAY CARD ── */
+.fp-card{
+  background:rgba(8,4,16,0.9);
+  border:1px solid rgba(150,20,50,0.35);
+  cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  transition:border-color 0.25s,box-shadow 0.25s;
+  backdrop-filter:blur(6px);
+}
+.fp-card:hover{border-color:rgba(200,0,50,0.7);box-shadow:0 0 18px rgba(200,0,40,0.2);}
+.fp-inner{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;}
+.fp-left{display:flex;align-items:center;gap:10px;}
+/* fp-title defined below with glitch */
+@keyframes fp-pulse{
+  0%,100%{text-shadow:0 0 10px rgba(255,20,50,0.4);}
+  50%{text-shadow:0 0 20px rgba(255,20,50,0.8),0 0 35px rgba(150,0,80,0.3);}
+}
+.fp-arrow{font-size:14px;color:var(--red2);opacity:0.6;animation:arr-move 1.4s ease-in-out infinite;}
+@keyframes arr-move{0%,100%{transform:translateX(0);}50%{transform:translateX(5px);}}
+
+/* ── CHAOS METER ── */
+#chaos-bar-wrap{
+  position:sticky;bottom:0;padding:7px 0 4px;
+  background:linear-gradient(0deg,rgba(5,3,8,0.98) 60%,transparent);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;z-index:20;
+}
+.chaos-lbl{font-family:'VT323',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);}
+.chaos-track{flex:1;height:4px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(180,0,40,0.25);overflow:hidden;}
+.chaos-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--purple),var(--red),var(--red2));transition:width 0.7s ease;box-shadow:0 0 6px var(--red);}
+.chaos-val{font-family:'VT323',monospace;font-size:12px;color:var(--red2);}
+
+/* ── FREEPLAY SCREEN ── */
+.back-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Fredoka One',cursive;font-size:13px;color:var(--muted);
+  background:rgba(80,0,20,0.2);border:1px solid rgba(150,20,50,0.3);
+  padding:8px 16px;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s;
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);
+  letter-spacing:0.06em;margin-bottom:14px;flex-shrink:0;
+}
+.back-btn:hover{color:var(--text);border-color:rgba(200,0,50,0.6);}
+
+.music-list{display:flex;flex-direction:column;gap:8px;}
+.song{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(8,4,16,0.9);
+  border:1px solid rgba(150,20,50,0.25);
+  padding:11px 14px;cursor:pointer;
+  position:relative;overflow:hidden;
+  clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+  opacity:0;transform:translateX(30px);
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.song.visible{animation:song-in 0.4s ease forwards;}
+@keyframes song-in{to{opacity:1;transform:translateX(0);}}
+.song:hover{border-color:rgba(200,0,50,0.5);box-shadow:0 0 14px rgba(180,0,40,0.18);}
+
+.song-thumb{
+  width:46px;height:46px;
+  border:1px solid rgba(180,0,40,0.4);
+  background:rgba(50,0,20,0.5);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:20px;position:relative;overflow:hidden;
+}
+.song-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.song-thumb-corrupt{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 60%,rgba(200,0,30,0.4));
+  pointer-events:none;
+}
+.song-info{flex:1;}
+/* song-name defined below with glitch */
+.song-sub{font-family:'VT323',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-top:2px;}
+.song-play{font-family:'VT323',monospace;font-size:10px;color:var(--red2);opacity:0.6;letter-spacing:0.12em;}
+
+/* ── CRASH SCREEN ── */
+#crash{
+  position:fixed;inset:0;background:var(--black);color:var(--red2);
+  display:none;z-index:9999;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  font-family:'Fredoka One',cursive;overflow:hidden;
+}
+#crash.show{display:flex;}
+.crash-title{
+  font-size:28px;text-align:center;
+  text-shadow:4px 4px 0 rgba(100,0,150,0.8);
+  animation:crash-shake 0.15s ease-in-out infinite;
+  letter-spacing:0.05em;
+}
+@keyframes crash-shake{
+  0%,100%{transform:translate(0,0);}
+  25%{transform:translate(-4px,2px) skewX(-2deg);}
+  75%{transform:translate(4px,-2px) skewX(2deg);}
+}
+.crash-sub{font-family:'VT323',monospace;font-size:14px;color:rgba(200,100,150,0.7);letter-spacing:0.2em;}
+.crash-eye{font-size:50px;animation:eye-spin 2s linear infinite;filter:drop-shadow(0 0 15px var(--red));}
+@keyframes eye-spin{0%,100%{transform:rotate(-5deg) scale(1);}50%{transform:rotate(5deg) scale(1.08);}}
+
+.pixel-block{
+  position:fixed;background:var(--black);border:2px solid var(--red);
+  z-index:10000;pointer-events:none;
+  animation:pixel-eat 0.6s steps(1) infinite;
+}
+@keyframes pixel-eat{0%{opacity:1;}50%{background:rgba(30,0,10,1);}100%{opacity:0.8;}}
+
+/* ── WAVE CANVAS ── */
+#wave-canvas{
+  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0.35;
+}
+
+/* ── GLITCH TEXT ── */
+.glitch-txt{
+  position:relative;
+  display:inline-block;
+}
+.glitch-txt::before,
+.glitch-txt::after{
+  content:attr(data-text);
+  position:absolute;
+  top:0;left:0;
+  width:100%;
+  overflow:hidden;
+  clip-path:inset(0 0 100% 0);
+}
+.glitch-txt::before{
+  color:var(--glitch2);
+  animation:glitch-top 4s steps(1) infinite;
+  text-shadow:none;
+}
+.glitch-txt::after{
+  color:var(--glitch1);
+  animation:glitch-bot 4s steps(1) infinite 0.15s;
+  text-shadow:none;
+}
+@keyframes glitch-top{
+  0%,90%,100%{clip-path:inset(0 0 100% 0);transform:translate(0);}
+  91%{clip-path:inset(0 0 55% 0);transform:translate(-3px,0);}
+  93%{clip-path:inset(20% 0 40% 0);transform:translate(3px,0);}
+  95%{clip-path:inset(0 0 100% 0);transform:translate(0);}
+}
+@keyframes glitch-bot{
+  0%,90%,100%{clip-path:inset(100% 0 0 0);transform:translate(0);}
+  91%{clip-path:inset(60% 0 0 0);transform:translate(3px,0);}
+  93%{clip-path:inset(40% 0 20% 0);transform:translate(-2px,0);}
+  95%{clip-path:inset(100% 0 0 0);transform:translate(0);}
+}
+
+/* glitch on logo specifically */
+.logo{
+  font-family:'Fredoka One',cursive;
+  font-size:17px;
+  letter-spacing:0.06em;
+  color:var(--text);
+  position:relative;
+  animation:logo-glitch 5s ease-in-out infinite;
+}
+.logo span{color:var(--red2);}
+.section-title{
+  font-family:'Fredoka One',cursive;
+  font-size:20px;
+  color:var(--text);
+  text-shadow:3px 3px 0 var(--red);
+  letter-spacing:0.03em;
+  display:flex;align-items:center;gap:10px;
+  animation:title-glitch 6s steps(1) infinite;
+}
+@keyframes title-glitch{
+  0%,88%,100%{text-shadow:3px 3px 0 var(--red);transform:translate(0);}
+  89%{text-shadow:-3px 3px 0 var(--glitch2),3px -2px 0 var(--red);transform:translate(2px,0);}
+  90%{text-shadow:3px 3px 0 var(--red);transform:translate(-1px,0);}
+  91%{text-shadow:4px 2px 0 var(--glitch1);transform:translate(0);}
+}
+.card-name{
+  font-family:'Fredoka One',cursive;font-size:13px;color:var(--text);letter-spacing:0.04em;
+  animation:cardname-glitch 8s steps(1) infinite;
+}
+@keyframes cardname-glitch{
+  0%,94%,100%{text-shadow:none;transform:translate(0);}
+  95%{text-shadow:-2px 0 var(--glitch2),2px 0 var(--glitch1);transform:translate(1px,0);}
+  96%{text-shadow:none;transform:translate(-1px,0);}
+  97%{text-shadow:none;transform:translate(0);}
+}
+.fp-title{
+  font-family:'Fredoka One',cursive;font-size:14px;color:var(--red2);
+  text-shadow:0 0 12px rgba(255,20,50,0.5);letter-spacing:0.06em;
+  animation:fp-pulse 2.5s ease-in-out infinite, fp-glitch 5s steps(1) infinite;
+}
+@keyframes fp-glitch{
+  0%,91%,100%{text-shadow:0 0 10px rgba(255,20,50,0.4);transform:translate(0);}
+  92%{text-shadow:-3px 0 var(--glitch2),3px 0 var(--glitch1);transform:translate(2px,0);}
+  93%{text-shadow:0 0 10px rgba(255,20,50,0.4);transform:translate(0);}
+}
+.song-name{
+  font-family:'Fredoka One',cursive;font-size:13px;color:var(--text);letter-spacing:0.04em;
+  animation:cardname-glitch 10s steps(1) infinite var(--sd,0s);
+}
+/* ── SCRIPT LIST ── */
+.script-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+
+.script-entry{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(8,4,16,0.92);
+  border:1px solid rgba(150,20,50,0.3);
+  padding:12px 14px;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s;
+  opacity:0;transform:translateX(30px);
+}
+.script-entry.visible{animation:entry-in 0.4s ease forwards;}
+@keyframes entry-in{to{opacity:1;transform:translateX(0);}}
+.script-entry:hover{
+  border-color:rgba(200,0,50,0.65);
+  box-shadow:0 0 16px rgba(180,0,40,0.2);
+  transform:translateX(3px);
+}
+.script-entry-left{display:flex;align-items:center;gap:12px;}
+
+.script-file-icon{
+  width:34px;height:38px;
+  border:1px solid rgba(180,0,40,0.35);
+  background:rgba(60,0,20,0.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.script-file-icon svg{width:18px;height:18px;color:var(--red2);}
+
+.script-info{display:flex;flex-direction:column;gap:3px;}
+.script-name{
+  font-family:'Fredoka One',cursive;font-size:13px;
+  color:var(--text);letter-spacing:0.03em;
+  animation:cardname-glitch 9s steps(1) infinite;
+}
+.script-ext{color:var(--red2);font-size:11px;}
+.script-meta{font-family:'VT323',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;}
+
+.script-entry-right{display:flex;align-items:center;gap:10px;}
+.script-tag{
+  font-family:'VT323',monospace;font-size:11px;color:var(--red2);
+  background:rgba(180,0,30,0.15);border:1px solid rgba(200,0,40,0.3);
+  padding:2px 8px;letter-spacing:0.12em;
+  clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,4px 100%,0 calc(100% - 4px));
+}
+.script-chevron{font-family:'VT323',monospace;font-size:14px;color:var(--red2);opacity:0.5;transition:transform 0.25s,opacity 0.2s;}
+.script-entry:hover .script-chevron{transform:translateX(4px);opacity:1;}
+
+/* ── SCRIPT VIEWER ── */
+.script-viewer{
+  display:none;
+  flex-direction:column;
+  flex:1;min-height:0;
+  border:1px solid rgba(180,0,40,0.4);
+  background:rgba(4,2,10,0.97);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  position:relative;overflow:hidden;
+  margin-bottom:8px;
+}
+.script-viewer.open{display:flex;}
+
+.viewer-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;
+  background:rgba(20,0,30,0.8);
+  border-bottom:1px solid rgba(180,0,40,0.25);
+  flex-shrink:0;
+}
+.viewer-tabs{display:flex;gap:6px;}
+.viewer-tab{
+  font-family:'VT323',monospace;font-size:12px;
+  color:var(--red2);letter-spacing:0.1em;
+  background:rgba(180,0,30,0.2);
+  border:1px solid rgba(200,0,40,0.35);
+  padding:3px 12px;
+  clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,0 100%);
+}
+.viewer-actions{display:flex;gap:6px;}
+.viewer-btn{
+  font-family:'VT323',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:0.1em;
+  background:transparent;
+  border:1px solid rgba(150,0,50,0.3);
+  padding:3px 10px;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s;
+}
+.viewer-btn:hover{color:var(--text);border-color:rgba(220,0,60,0.6);}
+
+/* scan line that sweeps down during typing */
+.viewer-scanline{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,0,60,0.7),rgba(150,0,255,0.5),transparent);
+  box-shadow:0 0 10px rgba(255,0,60,0.5);
+  top:40px;z-index:10;pointer-events:none;
+  transition:top 0.05s linear;
+  opacity:0;
+}
+.viewer-scanline.active{opacity:1;}
+
+.viewer-body{
+  flex:1;overflow-y:auto;overflow-x:auto;
+  padding:14px 16px;
+  font-family:'VT323',monospace;font-size:14px;
+  line-height:1.7;letter-spacing:0.04em;
+  min-height:200px;max-height:340px;
+}
+.viewer-body::-webkit-scrollbar{width:4px;}
+.viewer-body::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);}
+.viewer-body::-webkit-scrollbar-thumb{background:rgba(180,0,40,0.4);border-radius:2px;}
+
+/* code line */
+.code-line{
+  display:block;white-space:pre;
+  opacity:0;
+  animation:line-appear 0.08s ease forwards;
+}
+@keyframes line-appear{to{opacity:1;}}
+
+/* syntax highlight colors */
+.kw{color:#ff6eb4;}   /* keywords: function, return, if, var, const, let */
+.fn{color:#7ecfff;}   /* function names */
+.str{color:#ffe066;}  /* strings */
+.num{color:#ff9944;}  /* numbers */
+.cm{color:rgba(150,120,180,0.6);}  /* comments */
+.op{color:#ff4466;}   /* operators */
+.punct{color:rgba(200,180,220,0.5);} /* punctuation */
+
+/* cursor blink at end of typing */
+.cursor{
+  display:inline-block;width:8px;height:14px;
+  background:var(--red2);
+  animation:cur-blink 0.7s step-end infinite;
+  vertical-align:middle;margin-left:2px;
+}
+@keyframes cur-blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+.viewer-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px;
+  background:rgba(20,0,30,0.6);
+  border-top:1px solid rgba(180,0,40,0.2);
+  font-family:'VT323',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:0.12em;
+  flex-shrink:0;
+}
+#viewerProgress{color:var(--red2);}
+#viewerLang{color:rgba(150,100,200,0.7);}
+</style>
+</head>
+<body>
+
+<!-- BG LAYERS -->
+<!-- 👇 Coloque seu gif/imagem na mesma pasta e troque o nome no CSS (#pibby-bg) -->
+<div id="pibby-bg"></div>
+<div id="bg"></div>
+<canvas id="wave-canvas"></canvas>
+<div id="noise"></div>
+<div id="scan"></div>
+
+<!-- Corruption blobs nas bordas -->
+<div class="blob" style="width:60px;height:40px;top:15%;left:-10px;opacity:0.5;animation-delay:-1s;"></div>
+<div class="blob" style="width:80px;height:30px;bottom:20%;right:-15px;opacity:0.4;animation-delay:-3s;"></div>
+<div class="blob" style="width:40px;height:55px;top:45%;left:-8px;opacity:0.35;animation-delay:-2s;"></div>
+
+<!-- Glitch lines -->
+<div class="g-line" style="top:22%;width:45%;left:10%;--dur:4s;--delay:0.5s;"></div>
+<div class="g-line" style="top:58%;width:30%;right:5%;--dur:5s;--delay:1.8s;background:#9933ff;box-shadow:0 0 6px #9933ff;"></div>
+<div class="g-line" style="top:75%;width:20%;left:30%;--dur:3.5s;--delay:3s;"></div>
+<div class="g-line" style="top:8%;width:55%;left:20%;--dur:6s;--delay:0.2s;height:1px;background:#ffee00;box-shadow:0 0 4px #ffee00;"></div>
+
+<!-- ══════════════ TELA PRINCIPAL ══════════════ -->
+<div id="mainScreen" class="screen active">
+
+  <div id="topbar">
+    <div class="logo">Random <span>DEV</span></div>
+    <div class="hud-right">
+      <div class="hp-row">
+        <span class="hp-label">HP</span>
+        <div class="hp-track"><div class="hp-fill" id="hpFill"></div></div>
+        <span class="hp-label" id="hpVal">100%</span>
+      </div>
+      <div class="status-txt" id="statusTxt">■ SISTEMA ONLINE</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title">SYSTEM ONLINE</div>
+    <div class="section-sub">// SELECIONE UM MÓDULO PARA CONTINUAR</div>
+  </div>
+
+  <div class="cards-list">
+
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-head">
+        <div class="card-head-left">
+          <span class="card-num">01</span>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+          <span class="card-name">Sistema de Combo</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="card-badge">ATIVO</span>
+          <span class="card-arrow">▼</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="vid-wrap">
+            <div class="vid-placeholder">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
+              <span>kinito.mp4</span>
+            </div>
+            <video src="exemplo.mkv" loop playsinline></video>
+          </div>
+          <div class="card-desc">// Sistema de combo dinâmico — A cada combo feito com perfeção e janela reage de maneira aleatoria.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-head">
+        <div class="card-head-left">
+          <span class="card-num">02</span>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>
+          </div>
+          <span class="card-name">HUD Dinâmica</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="card-badge">HUD</span>
+          <span class="card-arrow">▼</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="vid-wrap">
+            <div class="vid-placeholder">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
+              <span>SSMGB.mp4</span>
+            </div>
+            <video src="dinâmico.mp4" loop playsinline></video>
+          </div>
+          <div class="card-desc">// Interface reativa — elementos visuais que respondem ao estado do jogo em tempo real</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-head">
+        <div class="card-head-left">
+          <span class="card-num">03</span>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <span class="card-name">Projeto Psicológico</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="card-badge">PSY</span>
+          <span class="card-arrow">▼</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="vid-wrap">
+            <div class="vid-placeholder">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
+              <span>FallenHero.mp4</span>
+            </div>
+            <video src="psicologico.mp4" loop playsinline></video>
+          </div>
+          <div class="card-desc">// Narrativa baseada em pressão psicológica — um evento ou seta especifica faz a ilusão de Tela Azul</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fp-card" onclick="openFreeplay()">
+      <div class="fp-inner">
+        <div class="fp-left">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" style="stroke:var(--red2)"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <span class="fp-title">ZONA LIMPA</span>
+        </div>
+        <span class="fp-arrow">→</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="chaos-bar-wrap">
+    <span class="chaos-lbl">CORRUPÇÃO</span>
+    <div class="chaos-track"><div class="chaos-fill" id="chaosFill"></div></div>
+    <span class="chaos-val" id="chaosVal">0%</span>
+  </div>
+
+</div>
+
+<!-- ══════════════ TELA SCRIPTS ══════════════ -->
+<div id="freeplayScreen" class="screen">
+
+  <div style="position:sticky;top:0;z-index:50;padding:14px 0 10px;background:linear-gradient(180deg,rgba(5,3,8,0.97) 70%,transparent);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+    <div class="logo">SCRIPTS <span>.JS</span></div>
+    <div style="font-family:'VT323',monospace;font-size:11px;color:var(--muted);letter-spacing:0.15em;" id="scriptStatus">// SELECIONE UM ARQUIVO</div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title">ARQUIVOS DO SISTEMA</div>
+    <div class="section-sub">// CLIQUE PARA DIGITALIZAR O CÓDIGO</div>
+  </div>
+
+  <button class="back-btn" onclick="backToMenu()">← VOLTAR</button>
+
+  <!-- lista de scripts -->
+  <div class="script-list" id="scriptList">
+
+    <!-- ════ SCRIPT 1 ════ -->
+    <!-- 👇 TROQUE o nome, descrição e o conteúdo do script abaixo -->
+    <div class="script-entry" onclick="openScript(0)">
+      <div class="script-entry-left">
+        <div class="script-file-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="script-info">
+          <div class="script-name">Sistema de Combo <span class="script-ext">.js</span></div>
+          <div class="script-meta">kinito.js · <span class="script-lines">--</span> linhas</div>
+        </div>
+      </div>
+      <div class="script-entry-right">
+        <span class="script-tag">COMBO</span>
+        <span class="script-chevron">▶</span>
+      </div>
+    </div>
+
+    <!-- ════ SCRIPT 2 ════ -->
+    <div class="script-entry" onclick="openScript(1)">
+      <div class="script-entry-left">
+        <div class="script-file-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="script-info">
+          <div class="script-name">HUD Dinâmica <span class="script-ext">.js</span></div>
+          <div class="script-meta">hud.js · <span class="script-lines">--</span> linhas</div>
+        </div>
+      </div>
+      <div class="script-entry-right">
+        <span class="script-tag">HUD</span>
+        <span class="script-chevron">▶</span>
+      </div>
+    </div>
+
+    <!-- ════ SCRIPT 3 ════ -->
+    <div class="script-entry" onclick="openScript(2)">
+      <div class="script-entry-left">
+        <div class="script-file-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="script-info">
+          <div class="script-name">Projeto Psicológico <span class="script-ext">.js</span></div>
+          <div class="script-meta">fallenhero.js · <span class="script-lines">--</span> linhas</div>
+        </div>
+      </div>
+      <div class="script-entry-right">
+        <span class="script-tag">PSY</span>
+        <span class="script-chevron">▶</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── VIEWER ── -->
+  <div class="script-viewer" id="scriptViewer">
+    <div class="viewer-topbar">
+      <div class="viewer-tabs">
+        <div class="viewer-tab active" id="viewerTabName">script.js</div>
+      </div>
+      <div class="viewer-actions">
+        <button class="viewer-btn" id="replayBtn" onclick="replayScript()">↺ REPLAY</button>
+        <button class="viewer-btn" onclick="closeScript()">✕ FECHAR</button>
+      </div>
+    </div>
+    <div class="viewer-scanline" id="viewerScanline"></div>
+    <div class="viewer-body" id="viewerBody"></div>
+    <div class="viewer-footer">
+      <span id="viewerProgress">DIGITALIZANDO...</span>
+      <span id="viewerLang">JavaScript</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════ CRASH SCREEN ══════════════ -->
+<div id="crash">
+  <div class="crash-eye">👁️</div>
+  <div class="crash-title" id="crashTitle">CORRUPÇÃO TOTAL</div>
+  <div class="crash-sub" id="crashSub">SAIA DAQUI AGORA</div>
+</div>
+
+<script>
+let chaos = 0;
+const MAX_CHAOS = 10;
+
+// ── STATUS MESSAGES ──
+const statuses = [
+  '■ SISTEMA ONLINE',
+  '▲ TENSÃO DETECTADA',
+  '▼ CORRUPÇÃO ATIVA',
+  '⚠ INSTÁVEL',
+  '✕ CRÍTICO'
+];
+
+function updateHUD() {
+  const pct = Math.round((chaos / MAX_CHAOS) * 100);
+  document.getElementById('chaosFill').style.width = pct + '%';
+  document.getElementById('chaosVal').textContent = pct + '%';
+  const hp = Math.max(0, 100 - pct * 10);
+  document.getElementById('hpFill').style.width = hp + '%';
+  document.getElementById('hpVal').textContent = hp + '%';
+  const si = Math.min(Math.floor(chaos / 2), statuses.length - 1);
+  document.getElementById('statusTxt').textContent = statuses[si];
+}
+
+// ── SCREEN TRANSITIONS ──
+function openFreeplay() {
+  const main = document.getElementById('mainScreen');
+  const free = document.getElementById('freeplayScreen');
+  main.classList.add('exit');
+  free.classList.add('active');
+  setTimeout(() => {
+    main.classList.remove('active', 'exit');
+    document.querySelectorAll('.script-entry').forEach((s, i) => {
+      s.classList.remove('visible');
+      setTimeout(() => s.classList.add('visible'), 100 + i * 130);
+    });
+  }, 50);
+}
+
+function backToMenu() {
+  const main = document.getElementById('mainScreen');
+  const free = document.getElementById('freeplayScreen');
+  closeScript();
+  free.classList.add('exit');
+  main.classList.add('active');
+  setTimeout(() => { free.classList.remove('active', 'exit'); }, 400);
+}
+
+// ══════════════════════════════════════════════
+// 👇 COLE SEUS SCRIPTS AQUI — um por entrada
+// Cada objeto = um arquivo .js
+// ══════════════════════════════════════════════
+const SCRIPTS = [
+  {
+    name: 'kinito.js',
+    label: 'Sistema de Combo',
+    tag: 'COMBO',
+    // 👇 Cole o conteúdo do seu script aqui (cada linha = um item do array)
+    lines: [
+      `// ── Sistema de Combo ──`,
+      `// Cole o conteúdo do seu script aqui`,
+      ``,
+      `var comboCount = 0;`,
+      `var comboTimer = null;`,
+      ``,
+      `function onHit(damage) {`,
+      `  comboCount++;`,
+      `  clearTimeout(comboTimer);`,
+      `  showCombo(comboCount);`,
+      `  comboTimer = setTimeout(resetCombo, 2000);`,
+      `}`,
+      ``,
+      `function showCombo(n) {`,
+      `  // exibe o multiplicador na HUD`,
+      `  hud.setText("COMBO x" + n);`,
+      `}`,
+      ``,
+      `function resetCombo() {`,
+      `  comboCount = 0;`,
+      `  hud.clearText();`,
+      `}`,
+    ]
+  },
+  {
+    name: 'hud.js',
+    label: 'HUD Dinâmica',
+    tag: 'HUD',
+    lines: [
+      `// ── HUD Dinâmica ──`,
+      `// Cole o conteúdo do seu script aqui`,
+      ``,
+      `var HUD = {};`,
+      ``,
+      `HUD.init = function() {`,
+      `  this.hp    = document.getElementById('hp-bar');`,
+      `  this.score = document.getElementById('score');`,
+      `  this.combo = document.getElementById('combo');`,
+      `};`,
+      ``,
+      `HUD.setHP = function(val) {`,
+      `  var pct = Math.max(0, Math.min(100, val));`,
+      `  this.hp.style.width = pct + '%';`,
+      `  if (pct < 30) this.hp.classList.add('critical');`,
+      `};`,
+      ``,
+      `HUD.addScore = function(pts) {`,
+      `  this.score.textContent = parseInt(this.score.textContent) + pts;`,
+      `};`,
+    ]
+  },
+  {
+    name: 'fallenhero.js',
+    label: 'Projeto Psicológico',
+    tag: 'PSY',
+    lines: [
+      `// ── Projeto Psicológico ──`,
+      `// Cole o conteúdo do seu script aqui`,
+      ``,
+      `var psychState = {`,
+      `  sanity:   100,`,
+      `  trust:    100,`,
+      `  isolation: 0,`,
+      `};`,
+      ``,
+      `function degradeSanity(amount) {`,
+      `  psychState.sanity = Math.max(0, psychState.sanity - amount);`,
+      `  if (psychState.sanity < 40) triggerDistortion();`,
+      `}`,
+      ``,
+      `function triggerDistortion() {`,
+      `  // efeitos visuais de corrupção`,
+      `  screen.addGlitch(0.3);`,
+      `  audio.playStatic();`,
+      `  narrative.push("você ainda está aí?");`,
+      `}`,
+      ``,
+      `function checkFall() {`,
+      `  return psychState.sanity <= 0 && psychState.isolation >= 80;`,
+      `}`,
+    ]
+  },
+];
+
+// ── TYPEWRITER ENGINE ──
+let typeInterval = null;
+let currentScript = null;
+
+function openScript(idx) {
+  const s = SCRIPTS[idx];
+  if (!s) return;
+  currentScript = idx;
+
+  // update line count on entry
+  document.querySelectorAll('.script-lines')[idx].textContent = s.lines.length;
+
+  // show viewer
+  const viewer = document.getElementById('scriptViewer');
+  const list   = document.getElementById('scriptList');
+  viewer.classList.add('open');
+  list.style.display = 'none';
+
+  document.getElementById('viewerTabName').textContent = s.name;
+  document.getElementById('scriptStatus').textContent  = '// DIGITALIZANDO ' + s.name.toUpperCase();
+  document.getElementById('viewerProgress').textContent = 'DIGITALIZANDO...';
+
+  startTypewriter(s);
+  spawnGlitchMoment();
+}
+
+function closeScript() {
+  clearInterval(typeInterval);
+  typeInterval = null;
+  const viewer = document.getElementById('scriptViewer');
+  const list   = document.getElementById('scriptList');
+  viewer.classList.remove('open');
+  list.style.display = 'flex';
+  document.getElementById('scriptStatus').textContent = '// SELECIONE UM ARQUIVO';
+  const body = document.getElementById('viewerBody');
+  body.innerHTML = '';
+  const scanline = document.getElementById('viewerScanline');
+  scanline.classList.remove('active');
+  scanline.style.top = '40px';
+}
+
+function replayScript() {
+  if (currentScript === null) return;
+  clearInterval(typeInterval);
+  typeInterval = null;
+  document.getElementById('viewerBody').innerHTML = '';
+  document.getElementById('viewerProgress').textContent = 'DIGITALIZANDO...';
+  startTypewriter(SCRIPTS[currentScript]);
+}
+
+function startTypewriter(s) {
+  const body     = document.getElementById('viewerBody');
+  const scanline = document.getElementById('viewerScanline');
+  const progress = document.getElementById('viewerProgress');
+  body.innerHTML = '';
+  scanline.classList.add('active');
+
+  // add cursor element
+  const cursorEl = document.createElement('span');
+  cursorEl.className = 'cursor';
+  body.appendChild(cursorEl);
+
+  let lineIdx = 0;
+
+  function typeLine() {
+    if (lineIdx >= s.lines.length) {
+      clearInterval(typeInterval);
+      typeInterval = null;
+      cursorEl.remove();
+      scanline.classList.remove('active');
+      progress.textContent = '✓ ' + s.lines.length + ' LINHAS CARREGADAS';
+      document.getElementById('scriptStatus').textContent = '// ' + s.name.toUpperCase() + ' — OK';
+      return;
+    }
+
+    const raw = s.lines[lineIdx];
+
+    // create line element
+    const lineEl = document.createElement('span');
+    lineEl.className = 'code-line';
+    lineEl.style.animationDelay = '0s';
+
+    // syntax highlight
+    lineEl.innerHTML = highlight(raw);
+
+    // insert before cursor
+    body.insertBefore(lineEl, cursorEl);
+
+    // move scanline
+    const rect = lineEl.getBoundingClientRect();
+    const bodyRect = document.getElementById('scriptViewer').getBoundingClientRect();
+    scanline.style.top = (rect.bottom - bodyRect.top) + 'px';
+
+    // auto scroll
+    body.scrollTop = body.scrollHeight;
+
+    // progress counter
+    progress.textContent = 'LINHA ' + (lineIdx + 1) + ' / ' + s.lines.length;
+
+    lineIdx++;
+  }
+
+  typeInterval = setInterval(typeLine, 55);
+}
+
+// ── SYNTAX HIGHLIGHTER (JS) ──
+function highlight(line) {
+  if (!line.trim()) return '&nbsp;';
+
+  let h = escHtml(line);
+
+  // comments
+  if (h.trimStart().startsWith('//')) {
+    return '<span class="cm">' + h + '</span>';
+  }
+
+  // strings
+  h = h.replace(/(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|`[^`]*`)/g, '<span class="str">$1</span>');
+
+  // numbers
+  h = h.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="num">$1</span>');
+
+  // keywords
+  const kws = ['function','return','var','let','const','if','else','for','while','new','this','true','false','null','undefined','typeof','of','in'];
+  kws.forEach(k => {
+    h = h.replace(new RegExp('\\b(' + k + ')\\b', 'g'), '<span class="kw">$1</span>');
+  });
+
+  // function calls  word(
+  h = h.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, (m, fn) => {
+    if (kws.includes(fn)) return m;
+    return '<span class="fn">' + fn + '</span>';
+  });
+
+  // operators
+  h = h.replace(/([=+\-*\/&|!<>]{1,2})/g, '<span class="op">$1</span>');
+
+  // punctuation
+  h = h.replace(/([{}\[\]();,.])/g, '<span class="punct">$1</span>');
+
+  return h;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// ── CARDS ──
+function toggleCard(card) {
+  const isActive = card.classList.contains('active');
+
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('active');
+    const v = c.querySelector('video');
+    if (v) { v.pause(); v.currentTime = 0; }
+  });
+
+  if (!isActive) {
+    card.classList.add('active');
+    chaos = Math.min(chaos + 1, MAX_CHAOS);
+    updateHUD();
+    const vid = card.querySelector('video');
+    if (vid) { setTimeout(() => vid.play().catch(() => {}), 350); }
+    if (chaos >= MAX_CHAOS) setTimeout(triggerCrash, 300);
+    else spawnGlitchMoment();
+  }
+}
+
+// ── GLITCH MOMENT ──
+function spawnGlitchMoment() {
+  if (chaos < 3) return;
+  const intensity = chaos / MAX_CHAOS;
+
+  // Random screen tear
+  const tear = document.createElement('div');
+  tear.style.cssText = `
+    position:fixed;left:0;right:0;
+    height:${2 + Math.random() * 4}px;
+    top:${Math.random() * 100}%;
+    background:linear-gradient(90deg,transparent,rgba(255,0,50,${0.3 + intensity * 0.4}),transparent);
+    z-index:500;pointer-events:none;
+  `;
+  document.body.appendChild(tear);
+  setTimeout(() => tear.remove(), 80 + Math.random() * 120);
+
+  // RGB shift on body
+  if (Math.random() < intensity * 0.5) {
+    document.body.style.filter = `hue-rotate(${Math.random() * 30 - 15}deg)`;
+    setTimeout(() => document.body.style.filter = '', 60 + Math.random() * 80);
+  }
+
+  // Random glitch text popup
+  if (Math.random() < intensity * 0.4) {
+    const msgs = ['ERROR','CORRUPT','GLITCH','▓▒░','RUN','???','!!!!'];
+    const popup = document.createElement('div');
+    popup.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    popup.style.cssText = `
+      position:fixed;
+      left:${10 + Math.random() * 80}%;
+      top:${10 + Math.random() * 80}%;
+      font-family:'VT323',monospace;font-size:14px;
+      color:rgba(255,20,50,0.8);
+      z-index:500;pointer-events:none;
+      letter-spacing:0.15em;
+    `;
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 200 + Math.random() * 300);
+  }
+}
+
+// ── CRASH SEQUENCE ──
+function triggerCrash() {
+  const crash = document.getElementById('crash');
+  crash.classList.add('show');
+
+  let count = 0;
+  const titles = [
+    'CORRUPÇÃO TOTAL','SISTEMA CORROMPIDO','GET OUT OF HERE!!',
+    'NÃO HÁ SAÍDA','VOCÊ SABIA DISSO?','ERRO FATAL',
+    'SYSTEM OVERRIDE','//////','TUDO VAI ACABAR'
+  ];
+  const subs = [
+    'SAIA DAQUI AGORA','THE GLITCH CONSUMES','▓▓▓▒▒░░░',
+    'TURN BACK','run.exe failed','!!!!!!!!!',
+    'you saw too much','...','RESETTING'
+  ];
+
+  const interval = setInterval(() => {
+    const t = document.getElementById('crashTitle');
+    const s = document.getElementById('crashSub');
+    t.textContent = titles[Math.floor(Math.random() * titles.length)];
+    s.textContent  = subs[Math.floor(Math.random() * subs.length)];
+    spawnPixelBlock();
+    breakLayout();
+    count++;
+    if (count > 18) {
+      clearInterval(interval);
+      t.textContent = 'SYSTEM OVERRIDDEN';
+      s.textContent = '// reiniciando...';
+      setTimeout(() => location.reload(), 2500);
+    }
+  }, 350);
+}
+
+function spawnPixelBlock() {
+  const d = document.createElement('div');
+  d.className = 'pixel-block';
+  const sz = 8 + Math.floor(Math.random() * 30);
+  d.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;`;
+  document.getElementById('crash').appendChild(d);
+  setTimeout(() => d.remove(), 600 + Math.random() * 400);
+}
+
+function breakLayout() {
+  document.querySelectorAll('.card,.fp-card,.script-entry').forEach(el => {
+    if (Math.random() > 0.7) {
+      el.style.transform = `translate(${Math.random()*10-5}px,${Math.random()*6-3}px) skewX(${Math.random()*2-1}deg)`;
+      setTimeout(() => el.style.transform = '', 100);
+    }
+  });
+}
+
+// ── WAVE CANVAS ──
+(function(){
+  const canvas = document.getElementById('wave-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // wave configs: each line has its own color, speed, amplitude, frequency
+  const waves = [
+    { color:'rgba(180,0,40,0.55)',  speed:0.0008, amp:38, freq:0.012, phase:0,    y:0.20, thick:1.2 },
+    { color:'rgba(140,0,180,0.4)',  speed:0.0006, amp:28, freq:0.009, phase:1.8,  y:0.38, thick:0.9 },
+    { color:'rgba(200,0,50,0.3)',   speed:0.001,  amp:50, freq:0.016, phase:3.1,  y:0.55, thick:1.5 },
+    { color:'rgba(100,0,200,0.35)', speed:0.0007, amp:22, freq:0.011, phase:0.9,  y:0.68, thick:0.8 },
+    { color:'rgba(220,0,60,0.25)',  speed:0.0012, amp:60, freq:0.02,  phase:2.4,  y:0.82, thick:1.0 },
+    { color:'rgba(80,0,160,0.3)',   speed:0.0005, amp:35, freq:0.008, phase:4.2,  y:0.12, thick:1.2 },
+    { color:'rgba(255,0,80,0.18)',  speed:0.0015, amp:18, freq:0.025, phase:1.2,  y:0.92, thick:0.7 },
+  ];
+
+  let t = 0;
+
+  function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    t = performance.now();
+
+    waves.forEach(w => {
+      ctx.beginPath();
+      ctx.strokeStyle = w.color;
+      ctx.lineWidth = w.thick;
+
+      const baseY = canvas.height * w.y;
+      ctx.moveTo(0, baseY + Math.sin(w.phase + t * w.speed) * w.amp);
+
+      for(let x = 1; x <= canvas.width; x += 3){
+        const y = baseY + Math.sin(w.phase + x * w.freq + t * w.speed) * w.amp
+                        + Math.sin(w.phase * 1.3 + x * w.freq * 0.5 + t * w.speed * 0.7) * (w.amp * 0.35);
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── INIT ──
+updateHUD();
+</script>
+</body>
+</html>
