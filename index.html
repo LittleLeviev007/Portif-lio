@@ -94,7 +94,7 @@ body{
   position:fixed;height:2px;
   background:var(--red2);
   pointer-events:none;z-index:4;
-  opacity:1;
+  opacity:0;
   animation:gline var(--dur,3s) ease-in-out infinite var(--delay,0s);
   box-shadow:0 0 6px var(--red2);
 }
@@ -604,6 +604,149 @@ video{
 }
 #viewerProgress{color:var(--red2);}
 #viewerLang{color:rgba(150,100,200,0.7);}
+/* ── AI BAR ── */
+.ai-bar{
+  display:none;
+  flex-direction:column;gap:8px;
+  background:rgba(6,2,14,0.95);
+  border:1px solid rgba(150,0,200,0.35);
+  padding:12px 14px;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  margin-bottom:10px;
+  flex-shrink:0;
+}
+.ai-bar.visible{display:flex;}
+
+.ai-bar-top{display:flex;align-items:center;justify-content:space-between;}
+.ai-bar-label{
+  font-family:'Fredoka One',cursive;font-size:13px;
+  color:var(--purple2);letter-spacing:0.06em;
+  display:flex;align-items:center;gap:7px;
+}
+.ai-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--purple2);
+  box-shadow:0 0 8px var(--purple2);
+  animation:dot-pulse 1.5s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.7);}}
+
+.ai-btn-random{
+  font-family:'VT323',monospace;font-size:12px;
+  color:var(--purple2);letter-spacing:0.1em;
+  background:rgba(100,0,180,0.15);
+  border:1px solid rgba(130,0,220,0.4);
+  padding:4px 12px;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,4px 100%,0 calc(100% - 4px));
+  transition:background 0.2s,color 0.2s;
+}
+.ai-btn-random:hover{background:rgba(120,0,200,0.3);color:#fff;}
+
+.ai-input-row{display:flex;gap:6px;}
+.ai-input{
+  flex:1;
+  font-family:'VT323',monospace;font-size:13px;
+  color:var(--text);letter-spacing:0.06em;
+  background:rgba(10,4,22,0.9);
+  border:1px solid rgba(130,0,220,0.35);
+  padding:8px 12px;outline:none;
+  clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);
+  transition:border-color 0.2s;
+}
+.ai-input:focus{border-color:rgba(160,0,255,0.7);}
+.ai-input::placeholder{color:rgba(150,100,200,0.4);}
+
+.ai-send-btn{
+  font-family:'VT323',monospace;font-size:13px;
+  color:#fff;letter-spacing:0.1em;
+  background:rgba(120,0,200,0.4);
+  border:1px solid rgba(160,0,255,0.5);
+  padding:8px 16px;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));
+  transition:background 0.2s;
+}
+.ai-send-btn:hover{background:rgba(140,0,220,0.6);}
+.ai-send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+.ai-key-row{
+  display:flex;align-items:center;gap:7px;
+  padding-top:6px;
+  border-top:1px solid rgba(100,0,150,0.2);
+}
+.ai-key-label{font-family:'VT323',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;white-space:nowrap;}
+.ai-key-input{
+  flex:1;
+  font-family:'VT323',monospace;font-size:11px;
+  color:var(--text);letter-spacing:0.05em;
+  background:rgba(10,4,22,0.9);
+  border:1px solid rgba(100,0,150,0.3);
+  padding:5px 10px;outline:none;
+  transition:border-color 0.2s;
+}
+.ai-key-input:focus{border-color:rgba(150,0,220,0.6);}
+.ai-key-save{
+  font-family:'VT323',monospace;font-size:11px;
+  color:var(--muted);
+  background:transparent;
+  border:1px solid rgba(100,0,150,0.3);
+  padding:5px 10px;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s;
+}
+.ai-key-save:hover{color:var(--text);border-color:rgba(150,0,220,0.6);}
+.ai-key-hint{font-family:'VT323',monospace;font-size:10px;letter-spacing:0.1em;}
+.ai-key-hint.ok{color:#00cc66;}
+.ai-key-hint.err{color:var(--red2);}
+
+/* viewer badge IA */
+.viewer-tab-badge{
+  font-family:'VT323',monospace;font-size:10px;
+  color:var(--purple2);
+  background:rgba(100,0,180,0.2);
+  border:1px solid rgba(130,0,220,0.4);
+  padding:2px 7px;letter-spacing:0.12em;
+  margin-left:4px;
+}
+
+/* ── REFINE BAR ── */
+.refine-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;
+  background:rgba(15,5,28,0.9);
+  border-top:1px solid rgba(130,0,220,0.2);
+  flex-shrink:0;
+}
+.refine-label{font-family:'VT323',monospace;font-size:11px;color:var(--purple2);letter-spacing:0.12em;white-space:nowrap;}
+.refine-input{
+  flex:1;
+  font-family:'VT323',monospace;font-size:12px;
+  color:var(--text);letter-spacing:0.05em;
+  background:rgba(10,4,22,0.9);
+  border:1px solid rgba(100,0,180,0.3);
+  padding:6px 10px;outline:none;
+  transition:border-color 0.2s;
+}
+.refine-input:focus{border-color:rgba(150,0,255,0.6);}
+.refine-input::placeholder{color:rgba(130,80,180,0.4);}
+.refine-send{
+  font-family:'VT323',monospace;font-size:12px;
+  color:var(--purple2);
+  background:rgba(80,0,160,0.2);
+  border:1px solid rgba(120,0,200,0.4);
+  padding:6px 12px;cursor:pointer;
+  transition:background 0.2s,color 0.2s;
+}
+.refine-send:hover{background:rgba(110,0,200,0.4);color:#fff;}
+.refine-send:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* loading state in viewer */
+.ai-loading-line{
+  font-family:'VT323',monospace;font-size:13px;
+  color:var(--purple2);letter-spacing:0.1em;
+  animation:loading-blink 0.8s step-end infinite;
+  display:block;padding:4px 0;
+}
+@keyframes loading-blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
 </style>
 </head>
 <body>
@@ -631,7 +774,7 @@ video{
 <div id="mainScreen" class="screen active">
 
   <div id="topbar">
-    <div class="logo">Random <span>DEV</span></div>
+    <div class="logo">Yota <span>DEV</span></div>
     <div class="hud-right">
       <div class="hp-row">
         <span class="hp-label">HP</span>
@@ -670,9 +813,9 @@ video{
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
               <span>kinito.mp4</span>
             </div>
-            <video src="exemplo.mkv" loop playsinline></video>
+            <video src="kinito.mp4" loop playsinline></video>
           </div>
-          <div class="card-desc">// Sistema de combo dinâmico — A cada combo feito com perfeção e janela reage de maneira aleatoria.</div>
+          <div class="card-desc">// Sistema de combo dinâmico — encadeamento de ações com multiplicador progressivo</div>
         </div>
       </div>
     </div>
@@ -698,7 +841,7 @@ video{
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
               <span>SSMGB.mp4</span>
             </div>
-            <video src="dinâmico.mp4" loop playsinline></video>
+            <video src="SSMGB.mp4" loop playsinline></video>
           </div>
           <div class="card-desc">// Interface reativa — elementos visuais que respondem ao estado do jogo em tempo real</div>
         </div>
@@ -726,9 +869,9 @@ video{
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16"/></svg>
               <span>FallenHero.mp4</span>
             </div>
-            <video src="psicologico.mp4" loop playsinline></video>
+            <video src="FallenHero.mp4" loop playsinline></video>
           </div>
-          <div class="card-desc">// Narrativa baseada em pressão psicológica — um evento ou seta especifica faz a ilusão de Tela Azul</div>
+          <div class="card-desc">// Narrativa baseada em pressão psicológica — o jogador como instrumento da queda</div>
         </div>
       </div>
     </div>
@@ -739,7 +882,7 @@ video{
           <div class="card-icon-wrap">
             <svg viewBox="0 0 24 24" style="stroke:var(--red2)"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           </div>
-          <span class="fp-title">ZONA LIMPA</span>
+          <span class="fp-title">FREEPLAY</span>
         </div>
         <span class="fp-arrow">→</span>
       </div>
@@ -827,22 +970,69 @@ video{
 
   </div>
 
+  <!-- ── AI PROMPT BAR (visível ao selecionar um script) ── -->
+  <div class="ai-bar" id="aiBar">
+    <div class="ai-bar-top">
+      <div class="ai-bar-label">
+        <span class="ai-dot"></span>
+        IA YOTA <span style="color:var(--muted);font-size:10px;">// GERADOR DE SCRIPT</span>
+      </div>
+      <div class="ai-bar-actions">
+        <button class="ai-btn-random" id="btnRandom" onclick="generateRandom()">⚄ ALEATÓRIO</button>
+      </div>
+    </div>
+    <div class="ai-input-row">
+      <input
+        type="text"
+        id="aiPromptInput"
+        class="ai-input"
+        placeholder="Ex: sistema de dano com crítico e esquiva..."
+        onkeydown="if(event.key==='Enter') generateFromPrompt()"
+        autocomplete="off"
+      />
+      <button class="ai-send-btn" onclick="generateFromPrompt()">▶ GERAR</button>
+    </div>
+    <!-- API KEY (guardada só localmente no navegador) -->
+    <div class="ai-key-row" id="aiKeyRow">
+      <span class="ai-key-label">🔑 API KEY:</span>
+      <input type="password" id="apiKeyInput" class="ai-key-input" placeholder="sk-ant-..." />
+      <button class="ai-key-save" onclick="saveKey()">SALVAR</button>
+      <span class="ai-key-hint" id="keyHint"></span>
+    </div>
+  </div>
+
   <!-- ── VIEWER ── -->
   <div class="script-viewer" id="scriptViewer">
     <div class="viewer-topbar">
       <div class="viewer-tabs">
         <div class="viewer-tab active" id="viewerTabName">script.js</div>
+        <div class="viewer-tab-badge" id="viewerBadge">IA</div>
       </div>
       <div class="viewer-actions">
-        <button class="viewer-btn" id="replayBtn" onclick="replayScript()">↺ REPLAY</button>
+        <button class="viewer-btn" id="replayBtn" onclick="replayTypewriter()">↺ REPLAY</button>
         <button class="viewer-btn" onclick="closeScript()">✕ FECHAR</button>
       </div>
     </div>
     <div class="viewer-scanline" id="viewerScanline"></div>
     <div class="viewer-body" id="viewerBody"></div>
+
+    <!-- ── REFINE BAR (aparece depois que a IA gera) ── -->
+    <div class="refine-bar" id="refineBar" style="display:none;">
+      <span class="refine-label">// REFINAR:</span>
+      <input
+        type="text"
+        id="refineInput"
+        class="refine-input"
+        placeholder="Ex: adiciona cooldown de 1.5s..."
+        onkeydown="if(event.key==='Enter') refineScript()"
+        autocomplete="off"
+      />
+      <button class="refine-send" onclick="refineScript()">↺ REFINAR</button>
+    </div>
+
     <div class="viewer-footer">
-      <span id="viewerProgress">DIGITALIZANDO...</span>
-      <span id="viewerLang">JavaScript</span>
+      <span id="viewerProgress">AGUARDANDO IA...</span>
+      <span id="viewerLang">JavaScript · IA</span>
     </div>
   </div>
 
@@ -892,6 +1082,7 @@ function openFreeplay() {
       setTimeout(() => s.classList.add('visible'), 100 + i * 130);
     });
   }, 50);
+  loadKey();
 }
 
 function backToMenu() {
@@ -903,159 +1094,251 @@ function backToMenu() {
   setTimeout(() => { free.classList.remove('active', 'exit'); }, 400);
 }
 
-// ══════════════════════════════════════════════
-// 👇 COLE SEUS SCRIPTS AQUI — um por entrada
-// Cada objeto = um arquivo .js
-// ══════════════════════════════════════════════
+// ── API KEY (salva no localStorage do navegador) ──
+function saveKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val.startsWith('sk-ant-')) {
+    showKeyHint('Chave inválida', false); return;
+  }
+  localStorage.setItem('yota_api_key', val);
+  showKeyHint('✓ SALVA', true);
+}
+function loadKey() {
+  const k = localStorage.getItem('yota_api_key') || '';
+  document.getElementById('apiKeyInput').value = k;
+  if (k) showKeyHint('✓ CARREGADA', true);
+}
+function getKey() { return localStorage.getItem('yota_api_key') || ''; }
+function showKeyHint(msg, ok) {
+  const h = document.getElementById('keyHint');
+  h.textContent = msg;
+  h.className = 'ai-key-hint ' + (ok ? 'ok' : 'err');
+}
+
+// ── SCRIPT METADATA ──
 const SCRIPTS = [
   {
     name: 'kinito.js',
     label: 'Sistema de Combo',
     tag: 'COMBO',
-    // 👇 Cole o conteúdo do seu script aqui (cada linha = um item do array)
-    lines: [
-      `// ── Sistema de Combo ──`,
-      `// Cole o conteúdo do seu script aqui`,
-      ``,
-      `var comboCount = 0;`,
-      `var comboTimer = null;`,
-      ``,
-      `function onHit(damage) {`,
-      `  comboCount++;`,
-      `  clearTimeout(comboTimer);`,
-      `  showCombo(comboCount);`,
-      `  comboTimer = setTimeout(resetCombo, 2000);`,
-      `}`,
-      ``,
-      `function showCombo(n) {`,
-      `  // exibe o multiplicador na HUD`,
-      `  hud.setText("COMBO x" + n);`,
-      `}`,
-      ``,
-      `function resetCombo() {`,
-      `  comboCount = 0;`,
-      `  hud.clearText();`,
-      `}`,
-    ]
+    theme: 'sistema de combo para jogo 2D: encadeamento de hits, multiplicador de dano, timer de reset, feedback visual na HUD'
   },
   {
     name: 'hud.js',
     label: 'HUD Dinâmica',
     tag: 'HUD',
-    lines: [
-      `// ── HUD Dinâmica ──`,
-      `// Cole o conteúdo do seu script aqui`,
-      ``,
-      `var HUD = {};`,
-      ``,
-      `HUD.init = function() {`,
-      `  this.hp    = document.getElementById('hp-bar');`,
-      `  this.score = document.getElementById('score');`,
-      `  this.combo = document.getElementById('combo');`,
-      `};`,
-      ``,
-      `HUD.setHP = function(val) {`,
-      `  var pct = Math.max(0, Math.min(100, val));`,
-      `  this.hp.style.width = pct + '%';`,
-      `  if (pct < 30) this.hp.classList.add('critical');`,
-      `};`,
-      ``,
-      `HUD.addScore = function(pts) {`,
-      `  this.score.textContent = parseInt(this.score.textContent) + pts;`,
-      `};`,
-    ]
+    theme: 'HUD dinâmica para jogo: barra de HP, pontuação, combo counter, status de personagem, todos reagindo a eventos do jogo'
   },
   {
     name: 'fallenhero.js',
     label: 'Projeto Psicológico',
     tag: 'PSY',
-    lines: [
-      `// ── Projeto Psicológico ──`,
-      `// Cole o conteúdo do seu script aqui`,
-      ``,
-      `var psychState = {`,
-      `  sanity:   100,`,
-      `  trust:    100,`,
-      `  isolation: 0,`,
-      `};`,
-      ``,
-      `function degradeSanity(amount) {`,
-      `  psychState.sanity = Math.max(0, psychState.sanity - amount);`,
-      `  if (psychState.sanity < 40) triggerDistortion();`,
-      `}`,
-      ``,
-      `function triggerDistortion() {`,
-      `  // efeitos visuais de corrupção`,
-      `  screen.addGlitch(0.3);`,
-      `  audio.playStatic();`,
-      `  narrative.push("você ainda está aí?");`,
-      `}`,
-      ``,
-      `function checkFall() {`,
-      `  return psychState.sanity <= 0 && psychState.isolation >= 80;`,
-      `}`,
-    ]
+    theme: 'sistema psicológico para jogo narrativo: estado mental do personagem (sanidade, isolamento, confiança), distorções visuais progressivas, diálogos que mudam conforme o estado'
   },
 ];
 
-// ── TYPEWRITER ENGINE ──
+let currentScriptIdx = null;
+let lastGeneratedCode = '';
 let typeInterval = null;
-let currentScript = null;
+let isGenerating = false;
+let conversationHistory = [];
 
+// ── OPEN SCRIPT ENTRY ──
 function openScript(idx) {
+  currentScriptIdx = idx;
+  conversationHistory = [];
+  lastGeneratedCode = '';
+
   const s = SCRIPTS[idx];
-  if (!s) return;
-  currentScript = idx;
-
-  // update line count on entry
-  document.querySelectorAll('.script-lines')[idx].textContent = s.lines.length;
-
-  // show viewer
   const viewer = document.getElementById('scriptViewer');
   const list   = document.getElementById('scriptList');
+  const aiBar  = document.getElementById('aiBar');
+
   viewer.classList.add('open');
   list.style.display = 'none';
+  aiBar.classList.add('visible');
 
   document.getElementById('viewerTabName').textContent = s.name;
-  document.getElementById('scriptStatus').textContent  = '// DIGITALIZANDO ' + s.name.toUpperCase();
-  document.getElementById('viewerProgress').textContent = 'DIGITALIZANDO...';
+  document.getElementById('scriptStatus').textContent = '// ' + s.label.toUpperCase();
+  document.getElementById('viewerProgress').textContent = 'PRONTO PARA GERAR';
+  document.getElementById('refineBar').style.display = 'none';
+  document.getElementById('viewerBody').innerHTML =
+    '<span class="ai-loading-line" style="animation:none;opacity:0.4;">// Pressione ⚄ ALEATÓRIO ou descreva um script acima...</span>';
 
-  startTypewriter(s);
+  document.getElementById('aiPromptInput').value = '';
   spawnGlitchMoment();
 }
 
 function closeScript() {
-  clearInterval(typeInterval);
-  typeInterval = null;
+  clearInterval(typeInterval); typeInterval = null;
+  isGenerating = false;
   const viewer = document.getElementById('scriptViewer');
   const list   = document.getElementById('scriptList');
+  const aiBar  = document.getElementById('aiBar');
   viewer.classList.remove('open');
+  aiBar.classList.remove('visible');
   list.style.display = 'flex';
   document.getElementById('scriptStatus').textContent = '// SELECIONE UM ARQUIVO';
-  const body = document.getElementById('viewerBody');
-  body.innerHTML = '';
+  document.getElementById('viewerBody').innerHTML = '';
+  document.getElementById('refineBar').style.display = 'none';
   const scanline = document.getElementById('viewerScanline');
   scanline.classList.remove('active');
   scanline.style.top = '40px';
+  currentScriptIdx = null;
+  conversationHistory = [];
 }
 
-function replayScript() {
-  if (currentScript === null) return;
-  clearInterval(typeInterval);
-  typeInterval = null;
-  document.getElementById('viewerBody').innerHTML = '';
-  document.getElementById('viewerProgress').textContent = 'DIGITALIZANDO...';
-  startTypewriter(SCRIPTS[currentScript]);
+// ── GENERATE: RANDOM ──
+function generateRandom() {
+  if (currentScriptIdx === null || isGenerating) return;
+  const s = SCRIPTS[currentScriptIdx];
+  const prompt = 'Gere um script JavaScript completo e funcional para: ' + s.theme +
+    '. Seja criativo, adicione variações interessantes. Retorne SOMENTE o código JS puro, sem explicações, sem markdown, sem blocos de código.';
+  callAI(prompt, false);
 }
 
+// ── GENERATE: FROM PROMPT ──
+function generateFromPrompt() {
+  if (isGenerating) return;
+  const input = document.getElementById('aiPromptInput').value.trim();
+  if (!input) return;
+  const s = SCRIPTS[currentScriptIdx];
+  const prompt = 'Gere um script JavaScript para um jogo baseado em: "' + input +
+    '". Contexto do projeto: ' + s.theme +
+    '. Retorne SOMENTE o código JS puro, sem explicações, sem markdown, sem blocos de código.';
+  callAI(prompt, false);
+  document.getElementById('aiPromptInput').value = '';
+}
+
+// ── REFINE ──
+function refineScript() {
+  if (isGenerating || !lastGeneratedCode) return;
+  const input = document.getElementById('refineInput').value.trim();
+  if (!input) return;
+  const prompt = 'Refine o script JavaScript abaixo conforme pedido: "' + input +
+    '". Script atual:\n' + lastGeneratedCode +
+    '\n\nRetorne SOMENTE o código JS refinado, sem explicações, sem markdown, sem blocos de código.';
+  callAI(prompt, true);
+  document.getElementById('refineInput').value = '';
+}
+
+function replayTypewriter() {
+  if (!lastGeneratedCode) return;
+  const lines = lastGeneratedCode.split('\n');
+  startTypewriter({ name: SCRIPTS[currentScriptIdx]?.name || 'script.js', lines });
+}
+
+// ── CALL ANTHROPIC API ──
+async function callAI(userPrompt, isRefinement) {
+  const key = getKey();
+  if (!key) {
+    showKeyHint('⚠ Insira sua API Key primeiro!', false);
+    document.getElementById('apiKeyInput').focus();
+    return;
+  }
+
+  isGenerating = true;
+  setUIBusy(true);
+
+  const body = document.getElementById('viewerBody');
+  const progress = document.getElementById('viewerProgress');
+  const scanline = document.getElementById('viewerScanline');
+
+  body.innerHTML = '';
+  scanline.classList.add('active');
+  progress.textContent = 'CONSULTANDO IA...';
+  document.getElementById('refineBar').style.display = 'none';
+  document.getElementById('scriptStatus').textContent = '// GERANDO CÓDIGO...';
+
+  // Animate loading dots
+  const loadEl = document.createElement('span');
+  loadEl.className = 'ai-loading-line';
+  loadEl.textContent = '// IA processando';
+  body.appendChild(loadEl);
+  let dots = 0;
+  const dotInterval = setInterval(() => {
+    dots = (dots + 1) % 4;
+    loadEl.textContent = '// IA processando' + '.'.repeat(dots);
+  }, 300);
+
+  // Build messages
+  conversationHistory.push({ role: 'user', content: userPrompt });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é um gerador de scripts JavaScript para jogos. Responda SEMPRE com código JS puro e funcional, sem markdown, sem blocos de código cercados por crases, sem explicações antes ou depois. Apenas o código.',
+        messages: conversationHistory
+      })
+    });
+
+    clearInterval(dotInterval);
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || 'Erro ' + res.status);
+    }
+
+    const data = await res.json();
+    const raw = (data.content?.[0]?.text || '').trim()
+      .replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
+
+    conversationHistory.push({ role: 'assistant', content: raw });
+    lastGeneratedCode = raw;
+
+    body.innerHTML = '';
+    const lines = raw.split('\n');
+    startTypewriter({
+      name: SCRIPTS[currentScriptIdx]?.name || 'script.js',
+      lines,
+      onDone: () => {
+        document.getElementById('refineBar').style.display = 'flex';
+        document.getElementById('scriptStatus').textContent =
+          '// ' + (SCRIPTS[currentScriptIdx]?.name || 'script.js').toUpperCase() + ' — GERADO';
+      }
+    });
+
+  } catch (e) {
+    clearInterval(dotInterval);
+    body.innerHTML = '';
+    const errEl = document.createElement('span');
+    errEl.className = 'code-line';
+    errEl.innerHTML = '<span class="cm">// ERRO: ' + escHtml(e.message) + '</span>';
+    body.appendChild(errEl);
+    progress.textContent = '✕ FALHA NA GERAÇÃO';
+    scanline.classList.remove('active');
+    document.getElementById('scriptStatus').textContent = '// ERRO DE COMUNICAÇÃO';
+    isGenerating = false;
+    setUIBusy(false);
+  }
+}
+
+function setUIBusy(busy) {
+  document.getElementById('aiPromptInput').disabled = busy;
+  document.querySelector('.ai-send-btn').disabled = busy;
+  document.getElementById('btnRandom').disabled = busy;
+  const refSend = document.querySelector('.refine-send');
+  if (refSend) refSend.disabled = busy;
+  const refInput = document.getElementById('refineInput');
+  if (refInput) refInput.disabled = busy;
+}
+
+// ── TYPEWRITER ENGINE ──
 function startTypewriter(s) {
+  clearInterval(typeInterval); typeInterval = null;
+
   const body     = document.getElementById('viewerBody');
   const scanline = document.getElementById('viewerScanline');
   const progress = document.getElementById('viewerProgress');
+
   body.innerHTML = '';
   scanline.classList.add('active');
+  document.getElementById('viewerTabName').textContent = s.name;
 
-  // add cursor element
   const cursorEl = document.createElement('span');
   cursorEl.className = 'cursor';
   body.appendChild(cursorEl);
@@ -1064,80 +1347,45 @@ function startTypewriter(s) {
 
   function typeLine() {
     if (lineIdx >= s.lines.length) {
-      clearInterval(typeInterval);
-      typeInterval = null;
+      clearInterval(typeInterval); typeInterval = null;
       cursorEl.remove();
       scanline.classList.remove('active');
-      progress.textContent = '✓ ' + s.lines.length + ' LINHAS CARREGADAS';
-      document.getElementById('scriptStatus').textContent = '// ' + s.name.toUpperCase() + ' — OK';
+      progress.textContent = '✓ ' + s.lines.length + ' LINHAS GERADAS';
+      isGenerating = false;
+      setUIBusy(false);
+      if (s.onDone) s.onDone();
       return;
     }
 
     const raw = s.lines[lineIdx];
-
-    // create line element
     const lineEl = document.createElement('span');
     lineEl.className = 'code-line';
-    lineEl.style.animationDelay = '0s';
-
-    // syntax highlight
     lineEl.innerHTML = highlight(raw);
-
-    // insert before cursor
     body.insertBefore(lineEl, cursorEl);
 
-    // move scanline
     const rect = lineEl.getBoundingClientRect();
-    const bodyRect = document.getElementById('scriptViewer').getBoundingClientRect();
-    scanline.style.top = (rect.bottom - bodyRect.top) + 'px';
-
-    // auto scroll
+    const viewerRect = document.getElementById('scriptViewer').getBoundingClientRect();
+    scanline.style.top = (rect.bottom - viewerRect.top) + 'px';
     body.scrollTop = body.scrollHeight;
-
-    // progress counter
     progress.textContent = 'LINHA ' + (lineIdx + 1) + ' / ' + s.lines.length;
-
     lineIdx++;
   }
 
-  typeInterval = setInterval(typeLine, 55);
+  typeInterval = setInterval(typeLine, 42);
 }
 
 // ── SYNTAX HIGHLIGHTER (JS) ──
 function highlight(line) {
   if (!line.trim()) return '&nbsp;';
-
   let h = escHtml(line);
-
-  // comments
-  if (h.trimStart().startsWith('//')) {
-    return '<span class="cm">' + h + '</span>';
-  }
-
-  // strings
+  if (h.trimStart().startsWith('//')) return '<span class="cm">' + h + '</span>';
   h = h.replace(/(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|`[^`]*`)/g, '<span class="str">$1</span>');
-
-  // numbers
   h = h.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="num">$1</span>');
-
-  // keywords
-  const kws = ['function','return','var','let','const','if','else','for','while','new','this','true','false','null','undefined','typeof','of','in'];
-  kws.forEach(k => {
-    h = h.replace(new RegExp('\\b(' + k + ')\\b', 'g'), '<span class="kw">$1</span>');
-  });
-
-  // function calls  word(
-  h = h.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, (m, fn) => {
-    if (kws.includes(fn)) return m;
-    return '<span class="fn">' + fn + '</span>';
-  });
-
-  // operators
+  const kws = ['function','return','var','let','const','if','else','for','while','new','this','true','false','null','undefined','typeof','of','in','class','async','await','try','catch'];
+  kws.forEach(k => { h = h.replace(new RegExp('\\b(' + k + ')\\b','g'), '<span class="kw">$1</span>'); });
+  h = h.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, (m, fn) => kws.includes(fn) ? m : '<span class="fn">' + fn + '</span>');
   h = h.replace(/([=+\-*\/&|!<>]{1,2})/g, '<span class="op">$1</span>');
-
-  // punctuation
   h = h.replace(/([{}\[\]();,.])/g, '<span class="punct">$1</span>');
-
   return h;
 }
 
